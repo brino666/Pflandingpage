@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PromptForge — Sharpen Your AI Prompts</title>
+<meta name="description" content="Tired of collecting prompt methods? PromptForge solves ambiguity — turn any statement, question or failing prompt into a clean, concise, actionable instruction that works with every AI model. Try free for 3 days.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --brand:   #FF4D00;
+  --brand2:  #FF7A3D;
+  --ink:     #080808;
+  --ink2:    #111111;
+  --surface: #161616;
+  --border:  #242424;
+  --muted:   #555;
+  --text:    #C8C8C8;
+  --white:   #FFFFFF;
+  --green:   #00C87A;
+  --mono:    'Courier New', monospace;
+}
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--ink);
+  color: var(--text);
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 999;
+  opacity: 0.6;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(8,8,8,0.95) 0%, transparent 100%);
+  backdrop-filter: blur(2px);
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem; font-weight: 900;
+  letter-spacing: -0.02em; color: var(--white);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--brand); }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-link {
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--muted); text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-link:hover { color: var(--white); }
+.nav-cta {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--brand); color: white;
+  padding: 8px 18px; border-radius: 50px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.nav-cta:hover { background: var(--brand2); transform: scale(1.03); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-glow {
+  position: absolute;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(255,77,0,0.18) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  pointer-events: none;
+  animation: pulse 6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, -60%) scale(1); }
+  50%       { opacity: 1;   transform: translate(-50%, -60%) scale(1.1); }
+}
+.hero-grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,77,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,77,0,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--brand);
+  border: 1px solid rgba(255,77,0,0.3);
+  padding: 5px 14px; border-radius: 50px;
+  margin-bottom: 28px;
+  animation: fadeUp 0.6s ease both;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); animation: blink 1.5s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--white);
+  margin-bottom: 24px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero h1 .accent { color: var(--brand); }
+.hero h1 .dim { color: #333; }
+
+.hero-sub {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  color: #666;
+  max-width: 520px;
+  line-height: 1.6;
+  margin-bottom: 48px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-actions {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 16px;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.hero-actions .trial-note {
+  font-family: var(--mono);
+  font-size: 0.68rem; color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.hero-actions .trial-note strong { color: var(--green); }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--brand);
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem; font-weight: 800;
+  letter-spacing: -0.01em;
+  padding: 16px 36px; border-radius: 50px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 0 40px rgba(255,77,0,0.3);
+}
+.btn-primary:hover {
+  background: var(--brand2);
+  transform: translateY(-2px);
+  box-shadow: 0 0 60px rgba(255,77,0,0.5);
+}
+.btn-primary svg { width: 18px; height: 18px; fill: white; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--muted);
+  font-size: 0.85rem; font-weight: 500;
+  padding: 12px 24px; border-radius: 50px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-ghost:hover { border-color: #444; color: var(--white); }
+.btn-ghost svg { width: 14px; fill: currentColor; }
+
+/* ── SOCIAL PROOF TICKER ── */
+.ticker-wrap {
+  width: 100%; overflow: hidden;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--ink2);
+}
+.ticker {
+  display: flex; gap: 60px;
+  width: max-content;
+  animation: ticker 30s linear infinite;
+}
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-item {
+  font-family: var(--mono);
+  font-size: 0.72rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 12px;
+}
+.ticker-item::before {
+  content: '◆'; color: var(--brand); font-size: 0.5rem;
+}
+
+/* ── HOW IT WORKS ── */
+.section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--brand); margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900; letter-spacing: -0.04em;
+  color: var(--white); line-height: 1.05;
+  margin-bottom: 60px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.step {
+  background: var(--surface);
+  padding: 36px 32px;
+  position: relative;
+  transition: background 0.2s;
+}
+.step:first-child { border-radius: 16px 0 0 16px; }
+.step:last-child  { border-radius: 0 16px 16px 0; }
+.step:hover { background: #1c1c1c; }
+.step-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 3.5rem; font-weight: 900;
+  color: rgba(255,77,0,0.12);
+  line-height: 1; margin-bottom: 16px;
+  letter-spacing: -0.04em;
+}
+.step h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem; font-weight: 800;
+  color: var(--white); margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+.step p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+/* ── DEMO WINDOW ── */
+.demo-section {
+  padding: 0 24px 100px;
+  max-width: 900px; margin: 0 auto;
+}
+.demo-window {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.demo-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: #131313;
+}
+.dot-red   { width: 12px; height: 12px; border-radius: 50%; background: #FF5F57; }
+.dot-yel   { width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E; }
+.dot-grn   { width: 12px; height: 12px; border-radius: 50%; background: #28C840; }
+.demo-url {
+  margin-left: 12px;
+  font-family: var(--mono);
+  font-size: 0.68rem; color: var(--muted);
+  background: #1a1a1a; border: 1px solid #2a2a2a;
+  padding: 4px 16px; border-radius: 50px;
+}
+.demo-body { display: grid; grid-template-columns: 1fr 1fr; }
+.demo-col {
+  padding: 28px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.demo-col:first-child { border-right: 1px solid var(--border); }
+.demo-col-label {
+  font-family: var(--mono);
+  font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.demo-text-bad {
+  font-size: 0.85rem; color: #555;
+  line-height: 1.6;
+  font-style: italic;
+}
+.demo-text-good {
+  font-size: 0.82rem; color: #aaa;
+  line-height: 1.7;
+  font-family: var(--mono);
+}
+.demo-text-good strong { color: var(--brand); font-weight: 400; }
+.demo-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--green);
+  border: 1px solid rgba(0,200,122,0.25);
+  padding: 3px 10px; border-radius: 50px;
+  width: fit-content;
+}
+
+/* ── PRICING ── */
+.pricing-section {
+  padding: 0 24px 100px;
+  max-width: 800px; margin: 0 auto;
+  text-align: center;
+}
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 56px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.price-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--brand), var(--brand2));
+}
+.price-card::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(255,77,0,0.07) 0%, transparent 70%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+.price-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--brand);
+  border: 1px solid rgba(255,77,0,0.3);
+  padding: 4px 12px; border-radius: 50px;
+  margin-bottom: 24px;
+}
+.price-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 5rem; font-weight: 900;
+  letter-spacing: -0.05em;
+  color: var(--white); line-height: 1;
+  margin-bottom: 4px;
+}
+.price-amount sup {
+  font-size: 2rem; vertical-align: top;
+  margin-top: 12px; color: var(--muted);
+}
+.price-amount sub {
+  font-size: 1.2rem; color: var(--muted); font-weight: 700;
+}
+.price-desc {
+  font-size: 0.9rem; color: var(--muted);
+  margin-bottom: 40px; line-height: 1.5;
+}
+.price-features {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 48px; text-align: left;
+  max-width: 360px; margin-left: auto; margin-right: auto;
+}
+.price-features li {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.88rem; color: #aaa;
+}
+.check {
+  width: 20px; height: 20px; flex-shrink: 0;
+  background: rgba(0,200,122,0.12);
+  border: 1px solid rgba(0,200,122,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.check svg { width: 10px; fill: var(--green); }
+
+/* Stripe button override wrapper */
+.stripe-wrapper {
+  display: flex; justify-content: center;
+  margin-bottom: 16px;
+}
+.trial-text {
+  font-family: var(--mono);
+  font-size: 0.7rem; color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.trial-text strong { color: var(--green); }
+
+/* ── TESTIMONIALS ── */
+.testimonials-section {
+  padding: 0 24px 100px;
+  max-width: 1100px; margin: 0 auto;
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.testi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+}
+.testi-stars { color: var(--brand); font-size: 0.8rem; margin-bottom: 14px; }
+.testi-text {
+  font-size: 0.85rem; color: #aaa;
+  line-height: 1.65; margin-bottom: 18px;
+  font-style: italic;
+}
+.testi-author {
+  font-size: 0.75rem; color: var(--muted);
+  font-weight: 600;
+}
+.testi-author strong { color: #ccc; display: block; font-size: 0.82rem; }
+
+/* ── FINAL CTA ── */
+.final-cta {
+  padding: 100px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+.final-cta::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,77,0,0.12) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.final-cta h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900; letter-spacing: -0.04em;
+  color: var(--white); line-height: 1.05;
+  margin-bottom: 20px;
+  position: relative;
+}
+.final-cta h2 span { color: var(--brand); }
+.final-cta p {
+  font-size: 1rem; color: var(--muted);
+  margin-bottom: 40px; position: relative;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 32px 40px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem; font-weight: 900;
+  color: var(--white); text-decoration: none;
+}
+.footer-logo span { color: var(--brand); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  font-size: 0.78rem; color: var(--muted);
+  text-decoration: none; transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--white); }
+.footer-copy { font-size: 0.75rem; color: #333; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .nav-link { display: none; }
+  .steps { grid-template-columns: 1fr; gap: 2px; }
+  .step:first-child { border-radius: 16px 16px 0 0; }
+  .step:last-child  { border-radius: 0 0 16px 16px; }
+  .demo-body { grid-template-columns: 1fr; }
+  .demo-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .price-card { padding: 36px 24px; }
+  footer { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Prompt<span>Forge</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="#how-it-works">How it works</a>
+    <a class="nav-link" href="#pricing">Pricing</a>
+    <a class="nav-cta" href="https://buy.stripe.com/cNicN5eCo9yZ1tW9rbd7q02" target="_blank" rel="noopener">Start Free Trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid-lines"></div>
+
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    Tired of collecting prompt "methods"?
+  </div>
+
+  <h1>
+    Get back to<br>
+    <span class="accent">the work</span><br>
+    <span class="dim">you love.</span>
+  </h1>
+
+  <p class="hero-sub">
+    You have a great idea. Now communicate it to AI properly, instantly. PromptForge solves ambiguity — turn any statement, question, or failing prompt into a clean, concise, actionable instruction that works with every AI model.
+  </p>
+
+  <div class="hero-actions">
+    <a class="btn-primary" href="https://buy.stripe.com/cNicN5eCo9yZ1tW9rbd7q02" target="_blank" rel="noopener">
+      Start 3-Day Free Trial
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="btn-ghost" href="https://promptforge-n3yh.vercel.app/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M10 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2v-4M14 3h7m0 0v7m0-7L10 14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Try the app first — no card needed
+    </a>
+    <span class="trial-note">3 days free · then <strong>$9/month</strong> · cancel anytime</span>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item">Works with ChatGPT</span>
+    <span class="ticker-item">Works with Claude</span>
+    <span class="ticker-item">Works with Gemini</span>
+    <span class="ticker-item">Works with Midjourney</span>
+    <span class="ticker-item">Works with Llama</span>
+    <span class="ticker-item">Works with Copilot</span>
+    <span class="ticker-item">3-Day Free Trial</span>
+    <span class="ticker-item">$9 / Month</span>
+    <span class="ticker-item">Cancel Anytime</span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item">Works with ChatGPT</span>
+    <span class="ticker-item">Works with Claude</span>
+    <span class="ticker-item">Works with Gemini</span>
+    <span class="ticker-item">Works with Midjourney</span>
+    <span class="ticker-item">Works with Llama</span>
+    <span class="ticker-item">Works with Copilot</span>
+    <span class="ticker-item">3-Day Free Trial</span>
+    <span class="ticker-item">$9 / Month</span>
+    <span class="ticker-item">Cancel Anytime</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="how-it-works" class="section">
+  <div class="section-label">// how it works</div>
+  <div class="section-title">Let PromptForge<br>translate for you.</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Say what's on your mind</h3>
+      <p>Don't overthink it. Type your idea, question, or failing prompt exactly as it comes to you — messy, vague, incomplete. That's the point.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>PromptForge translates</h3>
+      <p>The ambiguity gets solved. Your rough input is transformed into a structured, specific, actionable prompt that AI models actually understand.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Get back to your work</h3>
+      <p>One click to copy. Paste into ChatGPT, Claude, Gemini — any model. Get the output you always meant to ask for. No methods. No guides. No frustration.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO WINDOW -->
+<div class="demo-section">
+  <div class="demo-window">
+    <div class="demo-toolbar">
+      <div class="dot-red"></div>
+      <div class="dot-yel"></div>
+      <div class="dot-grn"></div>
+      <div class="demo-url">promptforge-n3yh.vercel.app</div>
+    </div>
+    <div class="demo-body">
+      <div class="demo-col">
+        <div class="demo-col-label">// your rough idea</div>
+        <div class="demo-text-bad">"write me an email about the meeting"</div>
+      </div>
+      <div class="demo-col">
+        <div class="demo-col-label">// forged prompt</div>
+        <div class="demo-badge">
+          <svg viewBox="0 0 24 24" width="8"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Optimized
+        </div>
+        <div class="demo-text-good">
+          <strong>Act as</strong> a professional business writer. <strong>Write</strong> a concise follow-up email summarizing key decisions from a team meeting. <strong>Tone:</strong> clear and action-oriented. <strong>Include:</strong> a subject line, 3 bullet action items with owners, and a next-steps section. <strong>Length:</stro
